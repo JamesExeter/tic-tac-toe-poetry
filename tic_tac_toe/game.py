@@ -73,16 +73,16 @@ def translate_num_pad_to_coord(num: int) -> tuple[int, int]:
 
     '''
     conversion_dict = {
-        1: (0, 2),
-        2: (1, 2),
+        1: (2, 0),
+        2: (2, 1),
         3: (2, 2),
-        4: (0, 1),
+        4: (1, 0),
         5: (1, 1),
-        6: (2, 1),
+        6: (1, 2),
         7: (0, 0),
-        8: (1, 0),
-        9: (2, 0),
-    }
+        8: (0, 1),
+        9: (0, 2),
+    } # dict of ints to tuple coordinates, think of row index in list of lists and then column index in list
 
     coordinate = conversion_dict[num]
     return coordinate
@@ -101,7 +101,8 @@ def check_valid_move(move_num: int, board: List[List[str]]) -> bool:
     '''
 
     is_valid = False
-    if move_num.isnumeric():
+    try:
+        move_num = int(move_num)
         if (move_num > 0) and (move_num < 10):
             coordinate = translate_num_pad_to_coord(move_num)
             if board[coordinate[0]][coordinate[1]] == " ":
@@ -110,7 +111,7 @@ def check_valid_move(move_num: int, board: List[List[str]]) -> bool:
                 print("That tile is already occupied!")
         else:
             print("Number entered outside the range: 1-9")
-    else:
+    except ValueError:
         print("You didn't enter a number!")
     
     return is_valid
@@ -170,7 +171,7 @@ def move(symbol: str, cur_board: List[List[str]]) -> List[List[str]]:
     is_valid_move = False
     player_move = ""
     while not is_valid_move:
-        print(f"Your move, player {symbol}")
+        print(f"\nYour move, player {symbol}")
         player_move = input("Enter the tile number: ")
         is_valid_move = check_valid_move(player_move, cur_board)
 
@@ -201,15 +202,23 @@ def play_game() -> None:
     [" ", " ", " "]
     ]                      # List of list of strings that denote the current board state
 
-    while (not is_won) or (not is_draw):
+    print("Initial board: ")
+    print(print_board(BOARD) + "\n")
+
+    while (not is_won) and (not is_draw):
         if is_player_1:
             cur_player = 1
         else:
             cur_player = 2
-        
+
         symbol = PLAYER_SYMBOLS[cur_player]     # string representing the symbol of the current player
-        board = move(symbol)
-        is_won = check_win(board)
+        board = move(symbol, BOARD)
+        BOARD = board
+
+        print("Current board: ")
+        print(print_board(BOARD) + "\n")
+
+        is_won = check_win(board, symbol)
         is_draw = check_draw(TURN_NUM)
 
         if is_won:
@@ -237,11 +246,17 @@ if __name__ == "__main__":
     1 | 2 | 3
     """)
     print("So when making a move, enter a number from 1 to 9")
+    print("\n\n------------------------- GAME ON --------------------------\n\n")
+
     play = True
     while play:
         play_game()
-        is_play = input("Play again (y | n)? ")
+        is_play = input("\nPlay again (y | n)? ")
         if is_play.lower() in ["n", "no"]:
             play = False
+        elif is_play.lower() in ["y", "yes"]:
+            pass
+        else:
+            print("Please retry")
     
     print("Goodbye!")
