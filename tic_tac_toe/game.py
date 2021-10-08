@@ -6,72 +6,61 @@ PLAYER_SYMBOLS = {
     2: 'O'
 }   # should be a dictionary with an int key and string value
 
-def check_draw(board: List[List[str]]) -> bool:
+def check_draw(elapsed_turns: int) -> bool:
     '''
     Checks if the game is a draw
 
         Parameters:
-            board (List of List of str): the current state of the board
+            elapsed_turns (int): a value representing the number of turns that have elapsed
 
         Returns:
             is_draw (bool): True if the game is a draw, False if it is not
     '''
-    pass
+    
+    is_draw = elapsed_turns == 9
+    return is_draw
 
-def check_win(board: List[List[str]]) -> bool:
+def win_indexes(n: int) -> tuple[int, int]:
+    '''
+    Function to return the indexes of winning configurations in the board
+    
+        Parameters:
+            n (int): the size of the board (n x n)
+
+        Return:
+            List[tuple(int, int)]: yields lists of coordinates that are required to win the game for any symbol
+    '''
+    # Rows
+    for r in range(n):
+        yield [(r, c) for c in range(n)]
+    # Columns
+    for c in range(n):
+        yield [(r, c) for r in range(n)]
+    # Diagonal top left to bottom right
+    yield [(i, i) for i in range(n)]
+    # Diagonal top right to bottom left
+    yield [(i, n - 1 - i) for i in range(n)]
+
+def check_win(board: List[List[str]], symbol: str) -> bool:
     '''
     Checks if the game has been won by the player who made the last move
 
         Parameters:
             board (List of List of str): the current state of the board
+            symbol (str): the symbol being checked for winning
         
         Return:
-            has_won (bool): True if the game has been won, False otherwise
+            (bool): True if the game has been won, False otherwise
     '''
+
+    n = len(board)  # int, the size of the board
+    for indexes in win_indexes(n):
+        if all(board[r][c] == symbol for r, c in indexes):
+            return True
+
     return False
 
-def check_valid_move(move_num: int) -> bool:
-    '''
-    Validates a made move by the user, checking that it is numeric and in the valid range
-
-        Parameters:
-            move_num (int): the entered move, representing a place in the board
-
-        Return:
-            is_valid (bool): True if the move is valid, False if invalid
-
-    '''
-    pass
-
-def print_board(board: List[List[str]]) -> None:
-    '''
-    Prints the current board
-
-        Parameters:
-            board (List of List of str): the current board state
-
-        Returns:
-            None
-
-    '''
-    pass
-
-def update_board(old_board: List[List[str]], x: int, y: int, sym: str) -> List[List[str]]:
-    '''
-    Updates the board to include the previously made move after it has been validated
-
-        Parameters:
-            old_board (List of List of str): the board state prior to the move
-            x (int): the x coordinate of the move
-            y (int): the y coordinate of the move
-            sym (str): the symbol to be entered into the board
-
-        Returns:
-            new_board (List of List of str): the new updated board
-    '''
-    pass
-
-def translate_num_pad_to_coord(num: int) -> tuple(int, int):
+def translate_num_pad_to_coord(num: int) -> tuple[int, int]:
     '''
     Converts the valid number entered by the user for their move into a tuple 
     representing x and y coordinates
@@ -83,7 +72,87 @@ def translate_num_pad_to_coord(num: int) -> tuple(int, int):
             coordinate (tuple (int, int)): a tuple containing the x and y index for the board of the move
 
     '''
-    pass
+    conversion_dict = {
+        1: (0, 2),
+        2: (1, 2),
+        3: (2, 2),
+        4: (0, 1),
+        5: (1, 1),
+        6: (2, 1),
+        7: (0, 0),
+        8: (1, 0),
+        9: (2, 0),
+    }
+
+    coordinate = conversion_dict[num]
+    return coordinate
+
+def check_valid_move(move_num: int, board: List[List[str]]) -> bool:
+    '''
+    Validates a made move by the user, checking that it is numeric and in the valid range
+
+        Parameters:
+            move_num (int): the entered move, representing a place in the board
+            board (List of List of str): the current board state
+
+        Return:
+            is_valid (bool): True if the move is valid, False if invalid
+
+    '''
+
+    is_valid = False
+    if move_num.isnumeric():
+        if (move_num > 0) and (move_num < 10):
+            coordinate = translate_num_pad_to_coord(move_num)
+            if board[coordinate[0]][coordinate[1]] == " ":
+                is_valid = True
+            else:
+                print("That tile is already occupied!")
+        else:
+            print("Number entered outside the range: 1-9")
+    else:
+        print("You didn't enter a number!")
+    
+    return is_valid
+
+def print_board(board: List[List[str]]) -> str:
+    '''
+    Prints the current board
+
+        Parameters:
+            board (List of List of str): the current board state
+
+        Returns:
+            printed_board (str): the string output of the board
+
+    '''
+    printed_board = f"""
+    -------------
+    | {board[0][0]} | {board[0][1]} | {board[0][2]} |
+    -------------
+    | {board[1][0]} | {board[1][1]} | {board[1][2]} |
+    -------------
+    | {board[2][0]} | {board[2][1]} | {board[2][2]} |
+    -------------
+    """
+    return printed_board
+
+def update_board(board: List[List[str]], x: int, y: int, sym: str) -> List[List[str]]:
+    '''
+    Updates the board to include the previously made move after it has been validated
+
+        Parameters:
+            board (List of List of str): the board state prior to the move
+            x (int): the x coordinate of the move
+            y (int): the y coordinate of the move
+            sym (str): the symbol to be entered into the board
+
+        Returns:
+            board (List of List of str): the new updated board
+    '''
+    
+    board[x][y] = sym
+    return board
 
 def move(symbol: str, cur_board: List[List[str]]) -> List[List[str]]:
     '''
@@ -97,7 +166,18 @@ def move(symbol: str, cur_board: List[List[str]]) -> List[List[str]]:
         Returns:
             new_board (List of List of str): new state of the board
     '''
-    return cur_board
+
+    is_valid_move = False
+    player_move = ""
+    while not is_valid_move:
+        print(f"Your move, player {symbol}")
+        player_move = input("Enter the tile number: ")
+        is_valid_move = check_valid_move(player_move, cur_board)
+
+    coordinate = translate_num_pad_to_coord(int(player_move))
+    new_board = update_board(cur_board, coordinate[0], coordinate[1], symbol)
+
+    return new_board
 
 def play_game() -> None:
     '''
@@ -110,16 +190,18 @@ def play_game() -> None:
         Returns:
             None
     '''
-    cur_player = None      # denotes current players, should be bool
-    is_player_1 = True     # boolean for denoting if the current player is player 1
-    is_won = False         # boolean for whether the game has been won or not
+    TURN_NUM = 1      # int, denoting the number of turns that have elapsed
+    cur_player = None      # bool, denotes current players
+    is_player_1 = True     # bool, for denoting if the current player is player 1
+    is_won = False         # bool, for whether the game has been won or not
+    is_draw = False        # bool, for whether the game is a draw or not
     BOARD = [
     [" ", " ", " "],
     [" ", " ", " "],
     [" ", " ", " "]
     ]                      # List of list of strings that denote the current board state
 
-    while not is_won:
+    while (not is_won) or (not is_draw):
         if is_player_1:
             cur_player = 1
         else:
@@ -128,11 +210,15 @@ def play_game() -> None:
         symbol = PLAYER_SYMBOLS[cur_player]     # string representing the symbol of the current player
         board = move(symbol)
         is_won = check_win(board)
+        is_draw = check_draw(TURN_NUM)
 
         if is_won:
             print(f"Congratulations Player {cur_player}, you won!")
+        elif is_draw:
+            print("No one wins!")
         else:
             is_player_1 = not is_player_1
+            TURN_NUM += 1
         
 if __name__ == "__main__":
     '''
