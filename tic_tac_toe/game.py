@@ -1,6 +1,11 @@
 # global dictionary to store which symbols are used for each player
 from typing import List
 
+"""
+import Player
+import Board
+import Game_Controller
+"""
 
 def check_draw(elapsed_turns: int) -> bool:
     '''
@@ -13,7 +18,13 @@ def check_draw(elapsed_turns: int) -> bool:
             is_draw (bool): True if the game is a draw, False if it is not
     '''
 
-    is_draw = elapsed_turns == 9
+    MAX_TURNS = 9
+    try:
+        elapsed_turns = int(elapsed_turns)
+    except ValueError:
+        print("int expected for comparison, something else recieved instead")
+
+    is_draw = elapsed_turns == MAX_TURNS
     return is_draw
 
 # unsure of how to test
@@ -27,6 +38,9 @@ def win_indexes(n: int) -> tuple[int, int]:
         Return:
             List[tuple(int, int)]: yields lists of coordinates that are required to win the game for any symbol
     '''
+    if (n < 1):
+        return []
+
     # Rows
     for r in range(n):
         yield [(r, c) for c in range(n)]
@@ -51,9 +65,11 @@ def check_win(board: List[List[str]], symbol: str) -> bool:
     '''
 
     n = len(board)  # int, the size of the board
-    for indexes in win_indexes(n):
-        if all(board[r][c] == symbol for r, c in indexes):
-            return True
+    # check n isn't too small
+    if n > 2: 
+        for indexes in win_indexes(n):
+            if all(board[r][c] == symbol for r, c in indexes):
+                return True
 
     return False
 
@@ -86,6 +102,9 @@ def translate_num_pad_to_coord(num: int) -> tuple[int, int]:
         coordinate = conversion_dict[num]
     except KeyError:
         print("Invalid number for coordinate key")
+        coordinate = -1
+    except ValueError:
+        print("Expected an int, recieved something else")
         coordinate = -1
     
     return coordinate
@@ -155,10 +174,20 @@ def update_board(board: List[List[str]], x: int, y: int, sym: str) -> List[List[
             board (List of List of str): the new updated board
     '''
 
-    try:
-        board[x][y] = sym
-    except IndexError:
-        print("Coordinates out of bounds")
+    if type(sym) == str:
+        if len(sym) == 1:
+            try:
+                board[x][y] = sym
+            except IndexError:
+                print("Coordinates out of bounds")
+            except ValueError:
+                print("Coordinate values provided are invalid")
+            except TypeError:
+                print("Coordinate values provided are invalid")
+        else:
+            print("Symbol was not one character long")
+    else:
+        print("Symbol provided was not a string")
 
     return board
 
@@ -186,7 +215,7 @@ def move(symbol: str, cur_board: List[List[str]]) -> List[List[str]]:
     coordinate = translate_num_pad_to_coord(int(player_move))
     if coordinate == -1:
         print("Problem converting to coordinate")
-        return cur_board
+        return move(symbol, cur_board)
     
     new_board = update_board(cur_board, coordinate[0], coordinate[1], symbol)
 
