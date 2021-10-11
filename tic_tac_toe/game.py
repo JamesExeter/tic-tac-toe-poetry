@@ -1,10 +1,6 @@
 # global dictionary to store which symbols are used for each player
 from typing import List
 
-PLAYER_SYMBOLS = {
-    1: 'X',
-    2: 'O'
-}   # should be a dictionary with an int key and string value
 
 def check_draw(elapsed_turns: int) -> bool:
     '''
@@ -16,14 +12,15 @@ def check_draw(elapsed_turns: int) -> bool:
         Returns:
             is_draw (bool): True if the game is a draw, False if it is not
     '''
-    
+
     is_draw = elapsed_turns == 9
     return is_draw
 
+# unsure of how to test
 def win_indexes(n: int) -> tuple[int, int]:
     '''
     Function to return the indexes of winning configurations in the board
-    
+
         Parameters:
             n (int): the size of the board (n x n)
 
@@ -48,7 +45,7 @@ def check_win(board: List[List[str]], symbol: str) -> bool:
         Parameters:
             board (List of List of str): the current state of the board
             symbol (str): the symbol being checked for winning
-        
+
         Return:
             (bool): True if the game has been won, False otherwise
     '''
@@ -67,7 +64,7 @@ def translate_num_pad_to_coord(num: int) -> tuple[int, int]:
 
         Parameters:
             num (int): a number between 1 and 9 representing a board space
-        
+
         Returns:
             coordinate (tuple (int, int)): a tuple containing the x and y index for the board of the move
 
@@ -82,9 +79,15 @@ def translate_num_pad_to_coord(num: int) -> tuple[int, int]:
         7: (0, 0),
         8: (0, 1),
         9: (0, 2),
-    } # dict of ints to tuple coordinates, think of row index in list of lists and then column index in list
+    }  # dict of ints to tuple coordinates, think of row index in list of lists and then column index in list
 
-    coordinate = conversion_dict[num]
+    coordinate = None
+    try:
+        coordinate = conversion_dict[num]
+    except KeyError:
+        print("Invalid number for coordinate key")
+        coordinate = -1
+    
     return coordinate
 
 def check_valid_move(move_num: int, board: List[List[str]]) -> bool:
@@ -113,7 +116,7 @@ def check_valid_move(move_num: int, board: List[List[str]]) -> bool:
             print("Number entered outside the range: 1-9")
     except ValueError:
         print("You didn't enter a number!")
-    
+
     return is_valid
 
 def print_board(board: List[List[str]]) -> str:
@@ -151,8 +154,12 @@ def update_board(board: List[List[str]], x: int, y: int, sym: str) -> List[List[
         Returns:
             board (List of List of str): the new updated board
     '''
-    
-    board[x][y] = sym
+
+    try:
+        board[x][y] = sym
+    except IndexError:
+        print("Coordinates out of bounds")
+
     return board
 
 def move(symbol: str, cur_board: List[List[str]]) -> List[List[str]]:
@@ -165,7 +172,8 @@ def move(symbol: str, cur_board: List[List[str]]) -> List[List[str]]:
             cur_board (List of List of str): represents the current state of the board
 
         Returns:
-            new_board (List of List of str): new state of the board
+            new_board (List of List of str): new state of the board, or
+            cur_board (List of List of str): returns old board in case of error
     '''
 
     is_valid_move = False
@@ -176,9 +184,45 @@ def move(symbol: str, cur_board: List[List[str]]) -> List[List[str]]:
         is_valid_move = check_valid_move(player_move, cur_board)
 
     coordinate = translate_num_pad_to_coord(int(player_move))
+    if coordinate == -1:
+        print("Problem converting to coordinate")
+        return cur_board
+    
     new_board = update_board(cur_board, coordinate[0], coordinate[1], symbol)
 
     return new_board
+
+def user_setup() -> dict:
+    '''
+    Function allows users to select which symbol they play as out of X and O
+
+        Parameters:
+            None
+
+        Returns:
+            player_syms (dict): a dictionary that maps each player to their respective symbols
+    '''
+
+    is_valid = False
+    first_player_piece = ""
+    second_player_piece = ""
+    choices = ["X", "O"]
+
+    while not is_valid:
+        first_player_piece = input("Choose your piece, Player 1 (X | O): ")
+        if first_player_piece.upper() in choices:
+            is_valid = True
+        else:
+            print("Pick either X or O")
+
+    choices.remove(first_player_piece)
+    second_player_piece = choices[0]
+    players_dict = {
+        1: first_player_piece,
+        2: second_player_piece
+    }
+
+    return players_dict
 
 def play_game() -> None:
     '''
@@ -197,10 +241,13 @@ def play_game() -> None:
     is_won = False         # bool, for whether the game has been won or not
     is_draw = False        # bool, for whether the game is a draw or not
     BOARD = [
-    [" ", " ", " "],
-    [" ", " ", " "],
-    [" ", " ", " "]
+        [" ", " ", " "],
+        [" ", " ", " "],
+        [" ", " ", " "]
     ]                      # List of list of strings that denote the current board state
+
+    # should be a dictionary with an int key and string value
+    PLAYER_SYMBOLS = user_setup()
 
     print("Initial board: ")
     print(print_board(BOARD) + "\n")
@@ -211,7 +258,8 @@ def play_game() -> None:
         else:
             cur_player = 2
 
-        symbol = PLAYER_SYMBOLS[cur_player]     # string representing the symbol of the current player
+        # string representing the symbol of the current player
+        symbol = PLAYER_SYMBOLS[cur_player]
         board = move(symbol, BOARD)
         BOARD = board
 
@@ -228,7 +276,7 @@ def play_game() -> None:
         else:
             is_player_1 = not is_player_1
             TURN_NUM += 1
-        
+
 if __name__ == "__main__":
     '''
     Main entry point into the game
@@ -258,5 +306,5 @@ if __name__ == "__main__":
             pass
         else:
             print("Please retry")
-    
+
     print("Goodbye!")
