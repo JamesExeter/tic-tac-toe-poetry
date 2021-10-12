@@ -1,4 +1,5 @@
 from typing import List
+from unittest import mock
 from tic_tac_toe import __version__
 from tic_tac_toe import game
 import pytest
@@ -350,6 +351,7 @@ def test_move_valid_on_empty_o(mock_input, example_empty_board: List[List[str]])
 
     assert player_move == expected_board
 
+
 @patch('builtins.input')
 def test_invalid_moves_on_empty_board_x(mock_input, example_empty_board: List[List[str]]):
     mock_input.side_effect = ["-1", "gh", "4.3", 5]
@@ -359,38 +361,77 @@ def test_invalid_moves_on_empty_board_x(mock_input, example_empty_board: List[Li
         [" ", "X", " "],
         [" ", " ", " "]
     ]
-    
+
     assert player_move_result == expected_board
+
 
 @patch('builtins.input')
 def test_invalid_moves_on_midgame_board_o(mock_input, example_midgame_board: List[List[str]], example_midgame_board_after_move: List[List[str]]):
     mock_input.side_effect = ["-1", "gh", "4.3", 4, 5]
     player_move_result = game.move("O", example_midgame_board)
-    
+
     assert player_move_result == example_midgame_board_after_move
 
-# PARAMETERIZE 
+
+@patch('builtins.input')
+def test_play_game_func_win_game_x(mock_input):
+    mock_input.side_effect = ["X", "1", "4", "2", "4", "5", "3"]
+    assert game.play_game() == None
+
+
+@patch('builtins.input')
+def test_play_game_func_win_game_o_lots_of_bad_inputs(mock_input):
+    mock_input.side_effect = ["X", "1", "4", "2", "4", "5", "3"]
+    assert game.play_game() == None
+
+
+@patch('builtins.input')
+def test_play_game_func_win_game_o_lots_of_bad_inputs(mock_input):
+    mock_input.side_effect = ["O", "gh", "1",
+                              "-4", "4", "20", "2", "4", "5", "3"]
+    assert game.play_game() == None
+
+
+@patch('builtins.input')
+def test_play_game_func_draw_game_o(mock_input):
+    mock_input.side_effect = ["O", "7", "4", "8", "9", "6", "5", "1", "3", "2"]
+    assert game.play_game() == None
+
+
+@patch('builtins.input')
+def test_main_func_win_game_x_play_once(mock_input):
+    mock_input.side_effect = ["X", "1", "4", "2", "4", "5", "3", "hi", "no"]
+    assert game.main() == None
+
+
+@patch('builtins.input')
+def test_main_func_win_game_x_play_twice(mock_input):
+    mock_input.side_effect = ["X", "1", "4", "2", "4", "5",
+                              "3", "Yes", "O", "7", "1", "8", "1", "2", "9", "no"]
+    assert game.main() == None
+
+
+# PARAMETERIZE
 
 @pytest.mark.parametrize(
     "test_input, expected",
     [
-        [([["X", "X", "X"],["O", " ", "O"],[" ", "O", " "]], "X"), True],
-        [([["X", " ", " "],["X", "O", "O"],["X", " ", " "]], "X"), True],
-        [([["X", " ", " "],["O", "X", "O"],[" ", " ", "X"]], "X"), True],
-        [([["O", " ", "X"],["O", "X", " "],["X", " ", " "]], "X"), True]
+        [([["X", "X", "X"], ["O", " ", "O"], [" ", "O", " "]], "X"), True],
+        [([["X", " ", " "], ["X", "O", "O"], ["X", " ", " "]], "X"), True],
+        [([["X", " ", " "], ["O", "X", "O"], [" ", " ", "X"]], "X"), True],
+        [([["O", " ", "X"], ["O", "X", " "], ["X", " ", " "]], "X"), True]
     ])
-
 def test_win_x_boards(test_input, expected):
     assert game.check_win(test_input[0], test_input[1]) == expected
 
+
 @pytest.mark.parametrize(
     "test_input, expected",
     [
-        [([["O", "O", "O"],["X", " ", "X"],[" ", "X", " "]], "O"), True],
-        [([["O", " ", " "],["O", "X", "X"],["O", " ", " "]], "O"), True],
-        [([["O", " ", " "],["X", "O", "X"],[" ", " ", "O"]], "O"), True],
-        [([["X", " ", "O"],["X", "O", " "],["O", " ", " "]], "O"), True]
+        [([["O", "O", "O"], ["X", " ", "X"], [" ", "X", " "]], "O"), True],
+        [([["O", " ", " "], ["O", "X", "X"], ["O", " ", " "]], "O"), True],
+        [([["O", " ", " "], ["X", "O", "X"], [" ", " ", "O"]], "O"), True],
+        [([["X", " ", "O"], ["X", "O", " "], ["O", " ", " "]], "O"), True]
     ])
-
 def test_win_o_boards(test_input, expected):
     assert game.check_win(test_input[0], test_input[1]) == expected

@@ -7,8 +7,9 @@ import Board
 import Game_Controller
 """
 
+
 def check_draw(elapsed_turns: int) -> bool:
-    '''
+    """
     Checks if the game is a draw
 
         Parameters:
@@ -16,7 +17,7 @@ def check_draw(elapsed_turns: int) -> bool:
 
         Returns:
             is_draw (bool): True if the game is a draw, False if it is not
-    '''
+    """
 
     MAX_TURNS = 9
     try:
@@ -27,9 +28,10 @@ def check_draw(elapsed_turns: int) -> bool:
     is_draw = elapsed_turns == MAX_TURNS
     return is_draw
 
+
 # unsure of how to test
 def win_indexes(n: int) -> tuple[int, int]:
-    '''
+    """
     Function to return the indexes of winning configurations in the board
 
         Parameters:
@@ -37,8 +39,8 @@ def win_indexes(n: int) -> tuple[int, int]:
 
         Return:
             List[tuple(int, int)]: yields lists of coordinates that are required to win the game for any symbol
-    '''
-    if (n < 1):
+    """
+    if n < 1:
         return []
 
     # Rows
@@ -52,8 +54,9 @@ def win_indexes(n: int) -> tuple[int, int]:
     # Diagonal top right to bottom left
     yield [(i, n - 1 - i) for i in range(n)]
 
+
 def check_win(board: List[List[str]], symbol: str) -> bool:
-    '''
+    """
     Checks if the game has been won by the player who made the last move
 
         Parameters:
@@ -62,20 +65,21 @@ def check_win(board: List[List[str]], symbol: str) -> bool:
 
         Return:
             (bool): True if the game has been won, False otherwise
-    '''
+    """
 
     n = len(board)  # int, the size of the board
     # check n isn't too small
-    if n > 2: 
+    if n > 2:
         for indexes in win_indexes(n):
             if all(board[r][c] == symbol for r, c in indexes):
                 return True
 
     return False
 
+
 def translate_num_pad_to_coord(num: int) -> tuple[int, int]:
-    '''
-    Converts the valid number entered by the user for their move into a tuple 
+    """
+    Converts the valid number entered by the user for their move into a tuple
     representing x and y coordinates
 
         Parameters:
@@ -84,7 +88,7 @@ def translate_num_pad_to_coord(num: int) -> tuple[int, int]:
         Returns:
             coordinate (tuple (int, int)): a tuple containing the x and y index for the board of the move
 
-    '''
+    """
     conversion_dict = {
         1: (2, 0),
         2: (2, 1),
@@ -106,11 +110,12 @@ def translate_num_pad_to_coord(num: int) -> tuple[int, int]:
     except ValueError:
         print("Expected an int, recieved something else")
         coordinate = -1
-    
+
     return coordinate
 
+
 def check_valid_move(move_num: int, board: List[List[str]]) -> bool:
-    '''
+    """
     Validates a made move by the user, checking that it is numeric and in the valid range
 
         Parameters:
@@ -120,7 +125,7 @@ def check_valid_move(move_num: int, board: List[List[str]]) -> bool:
         Return:
             is_valid (bool): True if the move is valid, False if invalid
 
-    '''
+    """
 
     is_valid = False
     try:
@@ -138,8 +143,9 @@ def check_valid_move(move_num: int, board: List[List[str]]) -> bool:
 
     return is_valid
 
+
 def print_board(board: List[List[str]]) -> str:
-    '''
+    """
     Prints the current board
 
         Parameters:
@@ -148,7 +154,7 @@ def print_board(board: List[List[str]]) -> str:
         Returns:
             printed_board (str): the string output of the board
 
-    '''
+    """
     printed_board = f"""
     -------------
     | {board[0][0]} | {board[0][1]} | {board[0][2]} |
@@ -160,8 +166,9 @@ def print_board(board: List[List[str]]) -> str:
     """
     return printed_board
 
+
 def update_board(board: List[List[str]], x: int, y: int, sym: str) -> List[List[str]]:
-    '''
+    """
     Updates the board to include the previously made move after it has been validated
 
         Parameters:
@@ -172,7 +179,7 @@ def update_board(board: List[List[str]], x: int, y: int, sym: str) -> List[List[
 
         Returns:
             board (List of List of str): the new updated board
-    '''
+    """
 
     if type(sym) == str:
         if len(sym) == 1:
@@ -191,8 +198,9 @@ def update_board(board: List[List[str]], x: int, y: int, sym: str) -> List[List[
 
     return board
 
+
 def move(symbol: str, cur_board: List[List[str]]) -> List[List[str]]:
-    '''
+    """
     Processes a player move, gets their input, validates it and then updates the board
     The move entered must be between 1 and 9 inclusive
 
@@ -203,7 +211,7 @@ def move(symbol: str, cur_board: List[List[str]]) -> List[List[str]]:
         Returns:
             new_board (List of List of str): new state of the board, or
             cur_board (List of List of str): returns old board in case of error
-    '''
+    """
 
     is_valid_move = False
     player_move = ""
@@ -216,13 +224,14 @@ def move(symbol: str, cur_board: List[List[str]]) -> List[List[str]]:
     if coordinate == -1:
         print("Problem converting to coordinate")
         return move(symbol, cur_board)
-    
+
     new_board = update_board(cur_board, coordinate[0], coordinate[1], symbol)
 
     return new_board
 
+
 def user_setup() -> dict:
-    '''
+    """
     Function allows users to select which symbol they play as out of X and O
 
         Parameters:
@@ -230,7 +239,7 @@ def user_setup() -> dict:
 
         Returns:
             player_syms (dict): a dictionary that maps each player to their respective symbols
-    '''
+    """
 
     is_valid = False
     first_player_piece = ""
@@ -246,15 +255,13 @@ def user_setup() -> dict:
 
     choices.remove(first_player_piece)
     second_player_piece = choices[0]
-    players_dict = {
-        1: first_player_piece,
-        2: second_player_piece
-    }
+    players_dict = {1: first_player_piece, 2: second_player_piece}
 
     return players_dict
 
+
 def play_game() -> None:
-    '''
+    """
     Function to play a singular game to the end
     Requires that a flag is updated that denotes the current player for each move
     After each turn, the board is checked to see if the game has been won
@@ -263,17 +270,17 @@ def play_game() -> None:
             None
         Returns:
             None
-    '''
-    TURN_NUM = 1      # int, denoting the number of turns that have elapsed
-    cur_player = None      # bool, denotes current players
-    is_player_1 = True     # bool, for denoting if the current player is player 1
-    is_won = False         # bool, for whether the game has been won or not
-    is_draw = False        # bool, for whether the game is a draw or not
+    """
+    TURN_NUM = 1  # int, denoting the number of turns that have elapsed
+    cur_player = None  # bool, denotes current players
+    is_player_1 = True  # bool, for denoting if the current player is player 1
+    is_won = False  # bool, for whether the game has been won or not
+    is_draw = False  # bool, for whether the game is a draw or not
     BOARD = [
         [" ", " ", " "],
         [" ", " ", " "],
-        [" ", " ", " "]
-    ]                      # List of list of strings that denote the current board state
+        [" ", " ", " "],
+    ]  # List of list of strings that denote the current board state
 
     # should be a dictionary with an int key and string value
     PLAYER_SYMBOLS = user_setup()
@@ -306,34 +313,54 @@ def play_game() -> None:
             is_player_1 = not is_player_1
             TURN_NUM += 1
 
-if __name__ == "__main__":
-    '''
+
+def main() -> None:
+    """
     Main entry point into the game
     Initialises flags and plays game infinitely until user says no
-    '''
+
+        Parameters:
+            None
+
+        Returns:
+            None
+    """
 
     print("Welcome to Tic Tac Toe!")
     print("You know the drill of how this works, player 1 is X, player 2 is O")
     print("When making a move, the grid is layed out as so:")
-    print("""
+    print(
+        """
     7 | 8 | 9
     ---------
     4 | 5 | 6
     ---------
     1 | 2 | 3
-    """)
+    """
+    )
     print("So when making a move, enter a number from 1 to 9")
     print("\n\n------------------------- GAME ON --------------------------\n\n")
 
     play = True
     while play:
         play_game()
-        is_play = input("\nPlay again (y | n)? ")
-        if is_play.lower() in ["n", "no"]:
-            play = False
-        elif is_play.lower() in ["y", "yes"]:
-            pass
-        else:
-            print("Please retry")
+
+        is_valid_response = False
+        while not is_valid_response:
+            is_play = input("\nPlay again (y | n)? ")
+            if is_play.lower() in ["n", "no"]:
+                play = False
+                is_valid_response = True
+            elif is_play.lower() in ["y", "yes"]:
+                is_valid_response = True
+            else:
+                print("Please retry")
 
     print("Goodbye!")
+
+
+if __name__ == "__main__":
+    '''
+    Calls the defined entry point function to the program    
+    '''
+    main()
