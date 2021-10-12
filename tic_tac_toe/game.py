@@ -1,5 +1,7 @@
 # global dictionary to store which symbols are used for each player
 from typing import List
+from tic_tac_toe import constants as consts
+from copy import deepcopy
 
 """
 import Player
@@ -19,13 +21,12 @@ def check_draw(elapsed_turns: int) -> bool:
             is_draw (bool): True if the game is a draw, False if it is not
     """
 
-    MAX_TURNS = 9
     try:
         elapsed_turns = int(elapsed_turns)
     except ValueError:
         print("int expected for comparison, something else recieved instead")
 
-    is_draw = elapsed_turns == MAX_TURNS
+    is_draw = elapsed_turns == consts.MAX_TURNS
     return is_draw
 
 
@@ -89,21 +90,9 @@ def translate_num_pad_to_coord(num: int) -> tuple[int, int]:
             coordinate (tuple (int, int)): a tuple containing the x and y index for the board of the move
 
     """
-    conversion_dict = {
-        1: (2, 0),
-        2: (2, 1),
-        3: (2, 2),
-        4: (1, 0),
-        5: (1, 1),
-        6: (1, 2),
-        7: (0, 0),
-        8: (0, 1),
-        9: (0, 2),
-    }  # dict of ints to tuple coordinates, think of row index in list of lists and then column index in list
-
     coordinate = None
     try:
-        coordinate = conversion_dict[num]
+        coordinate = consts.CONVERSION_DICT[num]
     except KeyError:
         print("Invalid number for coordinate key")
         coordinate = -1
@@ -164,6 +153,9 @@ def print_board(board: List[List[str]]) -> str:
     | {board[2][0]} | {board[2][1]} | {board[2][2]} |
     -------------
     """
+
+    # In the future, this function could be re-written such that it works for any board of size N
+
     return printed_board
 
 
@@ -244,7 +236,7 @@ def user_setup() -> dict:
     is_valid = False
     first_player_piece = ""
     second_player_piece = ""
-    choices = ["X", "O"]
+    choices = deepcopy(consts.PLAYER_SYMBOLS)
 
     while not is_valid:
         first_player_piece = input("Choose your piece, Player 1 (X | O): ")
@@ -276,11 +268,8 @@ def play_game() -> None:
     is_player_1 = True  # bool, for denoting if the current player is player 1
     is_won = False  # bool, for whether the game has been won or not
     is_draw = False  # bool, for whether the game is a draw or not
-    BOARD = [
-        [" ", " ", " "],
-        [" ", " ", " "],
-        [" ", " ", " "],
-    ]  # List of list of strings that denote the current board state
+    
+    BOARD = deepcopy(consts.STARTING_BOARD)
 
     # should be a dictionary with an int key and string value
     PLAYER_SYMBOLS = user_setup()
@@ -360,7 +349,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    '''
-    Calls the defined entry point function to the program    
-    '''
+    """
+    Calls the defined entry point function to the program
+    """
     main()
